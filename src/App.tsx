@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import SubmitSuggestion from "./pages/SubmitSuggestion";
 import SuggestionList from "./pages/SuggestionList";
 import SuggestionDetail from "./pages/SuggestionDetail";
+import JuryView from "./pages/JuryView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
