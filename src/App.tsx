@@ -25,6 +25,7 @@ const App = () => (
             <Route path="/einreichen" element={<SubmitSuggestion />} />
             <Route path="/vorschlaege" element={<SuggestionList />} />
             <Route path="/vorschlag/:id" element={<SuggestionDetail />} />
+            <Route path="/jury" element={<JuryView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

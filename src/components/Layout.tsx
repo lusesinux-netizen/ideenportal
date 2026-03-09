@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/einreichen', label: 'Vorschlag einreichen', icon: PlusCircle },
   { to: '/vorschlaege', label: 'Alle Vorschläge', icon: List },
+  { to: '/jury', label: 'Jury', icon: Shield },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
