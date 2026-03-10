@@ -25,7 +25,7 @@ export type DbSuggestion = {
 export async function fetchSuggestions() {
   const { data, error } = await supabase
     .from('suggestions')
-    .select('*, profiles:submitted_by(display_name), suggestion_team_members(*)')
+    .select('*, suggestion_team_members(*)')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data as DbSuggestion[];
