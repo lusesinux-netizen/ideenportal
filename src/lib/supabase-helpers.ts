@@ -34,7 +34,7 @@ export async function fetchSuggestions() {
 export async function fetchSuggestionById(id: string) {
   const { data, error } = await supabase
     .from('suggestions')
-    .select('*, profiles:submitted_by(display_name), suggestion_team_members(*)')
+    .select('*, suggestion_team_members(*)')
     .eq('id', id)
     .single();
   if (error) throw error;
