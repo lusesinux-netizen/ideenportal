@@ -8,8 +8,8 @@ const statusConfig: Record<SuggestionStatus, { label: string; className: string 
   umgesetzt: { label: 'Umgesetzt', className: 'bg-primary/10 text-primary border-primary/20' },
 };
 
-export default function StatusBadge({ status }: { status: SuggestionStatus }) {
-  const config = statusConfig[status];
+export default function StatusBadge({ status }: { status: string }) {
+  const config = statusConfig[status as SuggestionStatus] || { label: status, className: 'bg-muted text-muted-foreground border-border' };
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${config.className}`}>
       {config.label}
