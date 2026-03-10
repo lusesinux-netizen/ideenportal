@@ -1,23 +1,26 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb, Shield } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb, Shield, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/einreichen', label: 'Vorschlag einreichen', icon: PlusCircle },
-  { to: '/vorschlaege', label: 'Alle Vorschläge', icon: List },
-  { to: '/jury', label: 'Jury', icon: Shield },
-];
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { displayName, hasRole, signOut } = useAuth();
+
+  const navItems = [
+    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/einreichen', label: 'Vorschlag einreichen', icon: PlusCircle },
+    { to: '/vorschlaege', label: 'Alle Vorschläge', icon: List },
+    ...(hasRole('jury') || hasRole('geschaeftsfuehrung')
+      ? [{ to: '/jury', label: 'Jury', icon: Shield }]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar */}
       <header className="sticky top-0 z-50 gradient-hero border-b border-primary/20">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
@@ -30,7 +33,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const active = location.pathname === item.to;
@@ -49,35 +51,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Mobile toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-primary-foreground"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-primary-foreground/70">
+              <User className="h-3.5 w-3.5" /> {displayName}
+            </span>
+            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={signOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="md:hidden text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
 
-        {/* Mobile nav */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.nav
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden overflow-hidden border-t border-primary-foreground/10"
-            >
+            <motion.nav initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="md:hidden overflow-hidden border-t border-primary-foreground/10">
               <div className="container py-3 flex flex-col gap-1">
                 {navItems.map((item) => {
                   const active = location.pathname === item.to;
                   return (
                     <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>
-                      <Button
-                        variant={active ? 'secondary' : 'ghost'}
-                        className={`w-full justify-start ${!active ? 'text-primary-foreground/80 hover:bg-primary-foreground/10' : ''}`}
-                      >
+                      <Button variant={active ? 'secondary' : 'ghost'} className={`w-full justify-start ${!active ? 'text-primary-foreground/80 hover:bg-primary-foreground/10' : ''}`}>
                         <item.icon className="mr-2 h-4 w-4" />
                         {item.label}
                       </Button>
@@ -90,10 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </AnimatePresence>
       </header>
 
-      {/* Content */}
-      <main className="container py-6 md:py-10">
-        {children}
-      </main>
+      <main className="container py-6 md:py-10">{children}</main>
     </div>
   );
 }
