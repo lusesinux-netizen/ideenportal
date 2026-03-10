@@ -14,16 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      suggestion_team_members: {
+        Row: {
+          email: string
+          id: string
+          name: string
+          suggestion_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          name: string
+          suggestion_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string
+          suggestion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suggestion_team_members_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suggestions: {
+        Row: {
+          attachments: string[] | null
+          category: string
+          created_at: string
+          estimated_savings: string | null
+          expected_benefit: string
+          feasibility: string
+          id: string
+          jury_comment: string | null
+          premium_choice: string | null
+          premium_class: number | null
+          problem_description: string
+          scope: string
+          solution_description: string
+          status: string
+          submitted_by: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          category: string
+          created_at?: string
+          estimated_savings?: string | null
+          expected_benefit: string
+          feasibility: string
+          id?: string
+          jury_comment?: string | null
+          premium_choice?: string | null
+          premium_class?: number | null
+          problem_description: string
+          scope: string
+          solution_description: string
+          status?: string
+          submitted_by: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attachments?: string[] | null
+          category?: string
+          created_at?: string
+          estimated_savings?: string | null
+          expected_benefit?: string
+          feasibility?: string
+          id?: string
+          jury_comment?: string | null
+          premium_choice?: string | null
+          premium_class?: number | null
+          problem_description?: string
+          scope?: string
+          solution_description?: string
+          status?: string
+          submitted_by?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "mitarbeitend" | "jury" | "geschaeftsfuehrung"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +286,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["mitarbeitend", "jury", "geschaeftsfuehrung"],
+    },
   },
 } as const
