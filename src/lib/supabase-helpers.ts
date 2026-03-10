@@ -28,7 +28,7 @@ export async function fetchSuggestions() {
     .select('*, suggestion_team_members(*)')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data as DbSuggestion[];
+  return (data || []) as unknown as DbSuggestion[];
 }
 
 export async function fetchSuggestionById(id: string) {
