@@ -17,6 +17,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     ...(hasRole('jury') || hasRole('geschaeftsfuehrung')
       ? [{ to: '/jury', label: 'Jury', icon: Shield }]
       : []),
+    ...(hasRole('geschaeftsfuehrung')
+      ? [{ to: '/admin/rollen', label: 'Rollen', icon: Settings }]
+      : []),
   ];
 
   return (

@@ -47,6 +47,7 @@ const App = () => (
                     <Route path="/vorschlaege" element={<SuggestionList />} />
                     <Route path="/vorschlag/:id" element={<SuggestionDetail />} />
                     <Route path="/jury" element={<RoleRoute role="jury"><JuryView /></RoleRoute>} />
+                    <Route path="/admin/rollen" element={<RoleRoute role="geschaeftsfuehrung"><AdminRoles /></RoleRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>
