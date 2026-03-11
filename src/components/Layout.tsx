@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb, Shield, LogOut, User, Settings } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, List, Menu, X, Lightbulb, Shield, LogOut, User, Settings, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +15,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { to: '/einreichen', label: 'Vorschlag einreichen', icon: PlusCircle },
     { to: '/vorschlaege', label: 'Alle Vorschläge', icon: List },
     ...(hasRole('jury') || hasRole('geschaeftsfuehrung')
-      ? [{ to: '/jury', label: 'Jury', icon: Shield }]
+      ? [
+          { to: '/jury', label: 'Jury', icon: Shield },
+          { to: '/jury/protokolle', label: 'Protokolle', icon: FileText },
+        ]
       : []),
     ...(hasRole('geschaeftsfuehrung')
       ? [{ to: '/admin/rollen', label: 'Rollen', icon: Settings }]
