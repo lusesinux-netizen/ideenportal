@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      jury_protocol_signatures: {
+        Row: {
+          id: string
+          protocol_id: string
+          signed_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          protocol_id: string
+          signed_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          protocol_id?: string
+          signed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jury_protocol_signatures_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "jury_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jury_protocols: {
+        Row: {
+          attendees: string[]
+          created_at: string
+          created_by: string
+          decisions: Json
+          id: string
+          is_quorate: boolean
+          meeting_date: string
+          notes: string
+          updated_at: string
+        }
+        Insert: {
+          attendees?: string[]
+          created_at?: string
+          created_by: string
+          decisions?: Json
+          id?: string
+          is_quorate?: boolean
+          meeting_date: string
+          notes?: string
+          updated_at?: string
+        }
+        Update: {
+          attendees?: string[]
+          created_at?: string
+          created_by?: string
+          decisions?: Json
+          id?: string
+          is_quorate?: boolean
+          meeting_date?: string
+          notes?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -80,6 +145,7 @@ export type Database = {
           premium_choice: string | null
           premium_class: number | null
           problem_description: string
+          review_started_at: string | null
           scope: string
           solution_description: string
           status: string
@@ -99,6 +165,7 @@ export type Database = {
           premium_choice?: string | null
           premium_class?: number | null
           problem_description: string
+          review_started_at?: string | null
           scope: string
           solution_description: string
           status?: string
@@ -118,6 +185,7 @@ export type Database = {
           premium_choice?: string | null
           premium_class?: number | null
           problem_description?: string
+          review_started_at?: string | null
           scope?: string
           solution_description?: string
           status?: string
