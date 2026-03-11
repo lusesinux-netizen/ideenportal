@@ -10,6 +10,7 @@ import SubmitSuggestion from "./pages/SubmitSuggestion";
 import SuggestionList from "./pages/SuggestionList";
 import SuggestionDetail from "./pages/SuggestionDetail";
 import JuryView from "./pages/JuryView";
+import AdminRoles from "./pages/AdminRoles";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
