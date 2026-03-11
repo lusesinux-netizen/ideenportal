@@ -15,7 +15,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { to: '/einreichen', label: 'Vorschlag einreichen', icon: PlusCircle },
     { to: '/vorschlaege', label: 'Alle Vorschläge', icon: List },
     ...(hasRole('jury') || hasRole('geschaeftsfuehrung')
-      ? [{ to: '/jury', label: 'Jury', icon: Shield }]
+      ? [
+          { to: '/jury', label: 'Jury', icon: Shield },
+          { to: '/jury/protokolle', label: 'Protokolle', icon: FileText },
+        ]
       : []),
     ...(hasRole('geschaeftsfuehrung')
       ? [{ to: '/admin/rollen', label: 'Rollen', icon: Settings }]
