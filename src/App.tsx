@@ -12,6 +12,7 @@ import SuggestionDetail from "./pages/SuggestionDetail";
 import JuryView from "./pages/JuryView";
 import AdminRoles from "./pages/AdminRoles";
 import JuryProtocols from "./pages/JuryProtocols";
+import ManagementView from "./pages/ManagementView";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,7 @@ const App = () => (
                     <Route path="/vorschlag/:id" element={<SuggestionDetail />} />
                     <Route path="/jury" element={<RoleRoute role="jury"><JuryView /></RoleRoute>} />
                     <Route path="/jury/protokolle" element={<RoleRoute role="jury"><JuryProtocols /></RoleRoute>} />
+                    <Route path="/geschaeftsfuehrung" element={<RoleRoute role="geschaeftsfuehrung"><ManagementView /></RoleRoute>} />
                     <Route path="/admin/rollen" element={<RoleRoute role="geschaeftsfuehrung"><AdminRoles /></RoleRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
