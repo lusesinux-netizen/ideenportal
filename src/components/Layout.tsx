@@ -21,7 +21,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         ]
       : []),
     ...(hasRole('geschaeftsfuehrung')
-      ? [{ to: '/admin/rollen', label: 'Rollen', icon: Settings }]
+      ? [
+          { to: '/geschaeftsfuehrung', label: 'GF', icon: Briefcase },
+          { to: '/admin/rollen', label: 'Rollen', icon: Settings },
+        ]
       : []),
   ];
 

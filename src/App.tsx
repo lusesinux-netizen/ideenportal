@@ -50,6 +50,7 @@ const App = () => (
                     <Route path="/vorschlag/:id" element={<SuggestionDetail />} />
                     <Route path="/jury" element={<RoleRoute role="jury"><JuryView /></RoleRoute>} />
                     <Route path="/jury/protokolle" element={<RoleRoute role="jury"><JuryProtocols /></RoleRoute>} />
+                    <Route path="/geschaeftsfuehrung" element={<RoleRoute role="geschaeftsfuehrung"><ManagementView /></RoleRoute>} />
                     <Route path="/admin/rollen" element={<RoleRoute role="geschaeftsfuehrung"><AdminRoles /></RoleRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
