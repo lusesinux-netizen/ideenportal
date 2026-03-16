@@ -55,6 +55,10 @@ export default function SubmitSuggestion() {
       toast.error('Bitte füllen Sie alle Pflichtfelder aus.');
       return;
     }
+    if (!selfDecisionConfirm) {
+      toast.error('Bitte bestätigen Sie, dass der Vorschlag nicht eigenständig umsetzbar ist.');
+      return;
+    }
     setSubmitting(true);
     try {
       await createSuggestion(
