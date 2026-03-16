@@ -92,6 +92,8 @@ export default function SubmitSuggestion() {
               <li>Die Idee muss realisierbar und wirtschaftlich vertretbar sein</li>
               <li>Reine Problembeschreibungen ohne Lösung sind nicht zulässig</li>
             </ul>
+            <p className="font-semibold mt-3 mb-1">Prämienberechtigung:</p>
+            <p className="text-muted-foreground">Prämienberechtigt ist ein Vorschlag, der zum eigenen Arbeitsbereich gehört, aber <strong className="text-foreground">nicht selbst entschieden</strong> werden kann. Vorschläge, die in den eigenen Aufgabenbereich fallen und eigenständig umsetzbar sind, gelten nicht als prämienberechtigte Verbesserungsvorschläge.</p>
           </div>
         </div>
       </div>
