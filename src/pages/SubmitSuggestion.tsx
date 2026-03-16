@@ -159,7 +159,7 @@ export default function SubmitSuggestion() {
                   <div className="flex-1 min-w-0">
                     {checkingDuplicates ? (
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Prüfe auf ähnliche Vorschläge…
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> KI prüft auf inhaltlich ähnliche Vorschläge…
                       </p>
                     ) : (
                       <>
