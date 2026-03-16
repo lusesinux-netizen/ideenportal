@@ -45,7 +45,7 @@ export default function SubmitSuggestion() {
   const [duplicates, setDuplicates] = useState<{ id: string; title: string; status: string; category: string }[]>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
 
-  // Debounced duplicate check on title change
+  // Debounced AI-powered semantic duplicate check
   useEffect(() => {
     const trimmed = title.trim();
     if (trimmed.length < 5) {
@@ -56,38 +56,25 @@ export default function SubmitSuggestion() {
     const timeout = setTimeout(async () => {
       setCheckingDuplicates(true);
       try {
-        // Split into keywords (3+ chars) and search for matches
-        const keywords = trimmed
-          .split(/\s+/)
-          .filter(w => w.length >= 3)
-          .slice(0, 4);
+        const { data, error } = await supabase.functions.invoke('check-duplicates', {
+          body: { title: trimmed, problem: problem.trim() || undefined },
+        });
 
-        if (keywords.length === 0) {
+        if (error) {
+          console.error('Duplicate check error:', error);
           setDuplicates([]);
-          return;
+        } else {
+          setDuplicates(data?.duplicates ?? []);
         }
-
-        // Build an OR filter matching any keyword in title or problem_description
-        const orFilter = keywords
-          .map(k => `title.ilike.%${k}%,problem_description.ilike.%${k}%`)
-          .join(',');
-
-        const { data } = await supabase
-          .from('suggestions')
-          .select('id, title, status, category')
-          .or(orFilter)
-          .limit(5);
-
-        setDuplicates(data ?? []);
       } catch {
         setDuplicates([]);
       } finally {
         setCheckingDuplicates(false);
       }
-    }, 500);
+    }, 800);
 
     return () => clearTimeout(timeout);
-  }, [title]);
+  }, [title, problem]);
 
   const addTeamMember = () => {
     if (!newMemberName.trim() || !newMemberEmail.trim()) return;
@@ -172,7 +159,7 @@ export default function SubmitSuggestion() {
                   <div className="flex-1 min-w-0">
                     {checkingDuplicates ? (
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Prüfe auf ähnliche Vorschläge…
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> KI prüft auf inhaltlich ähnliche Vorschläge…
                       </p>
                     ) : (
                       <>
