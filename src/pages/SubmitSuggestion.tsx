@@ -40,6 +40,7 @@ export default function SubmitSuggestion() {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selfDecisionConfirm, setSelfDecisionConfirm] = useState(false);
 
   const addTeamMember = () => {
     if (!newMemberName.trim() || !newMemberEmail.trim()) return;
