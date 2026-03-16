@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { createSuggestion } from '@/lib/supabase-helpers';
 import { useQueryClient } from '@tanstack/react-query';
@@ -39,6 +40,7 @@ export default function SubmitSuggestion() {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selfDecisionConfirm, setSelfDecisionConfirm] = useState(false);
 
   const addTeamMember = () => {
     if (!newMemberName.trim() || !newMemberEmail.trim()) return;
@@ -51,6 +53,10 @@ export default function SubmitSuggestion() {
     e.preventDefault();
     if (!title || !problem || !solution || !benefit || !category || !scope || !feasibility) {
       toast.error('Bitte füllen Sie alle Pflichtfelder aus.');
+      return;
+    }
+    if (!selfDecisionConfirm) {
+      toast.error('Bitte bestätigen Sie, dass der Vorschlag nicht eigenständig umsetzbar ist.');
       return;
     }
     setSubmitting(true);
@@ -143,6 +149,18 @@ export default function SubmitSuggestion() {
             <Button type="button" variant="secondary" onClick={addTeamMember} className="shrink-0"><PlusCircle className="mr-2 h-4 w-4" /> Hinzufügen</Button>
           </div>
         </section>
+
+        <div className="flex items-start gap-3 rounded-xl border bg-card p-5 shadow-card">
+          <Checkbox
+            id="selfDecisionConfirm"
+            checked={selfDecisionConfirm}
+            onCheckedChange={(checked) => setSelfDecisionConfirm(checked === true)}
+            className="mt-0.5"
+          />
+          <Label htmlFor="selfDecisionConfirm" className="text-sm leading-relaxed cursor-pointer">
+            Ich bestätige, dass dieser Vorschlag <strong>nicht in meinem eigenen Aufgabenbereich eigenständig umsetzbar</strong> ist und daher als prämienberechtigter Verbesserungsvorschlag eingereicht wird. *
+          </Label>
+        </div>
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => navigate('/')}>Abbrechen</Button>
