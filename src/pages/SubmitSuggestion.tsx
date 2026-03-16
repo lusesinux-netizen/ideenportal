@@ -42,6 +42,52 @@ export default function SubmitSuggestion() {
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selfDecisionConfirm, setSelfDecisionConfirm] = useState(false);
+  const [duplicates, setDuplicates] = useState<{ id: string; title: string; status: string; category: string }[]>([]);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+
+  // Debounced duplicate check on title change
+  useEffect(() => {
+    const trimmed = title.trim();
+    if (trimmed.length < 5) {
+      setDuplicates([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setCheckingDuplicates(true);
+      try {
+        // Split into keywords (3+ chars) and search for matches
+        const keywords = trimmed
+          .split(/\s+/)
+          .filter(w => w.length >= 3)
+          .slice(0, 4);
+
+        if (keywords.length === 0) {
+          setDuplicates([]);
+          return;
+        }
+
+        // Build an OR filter matching any keyword in title or problem_description
+        const orFilter = keywords
+          .map(k => `title.ilike.%${k}%,problem_description.ilike.%${k}%`)
+          .join(',');
+
+        const { data } = await supabase
+          .from('suggestions')
+          .select('id, title, status, category')
+          .or(orFilter)
+          .limit(5);
+
+        setDuplicates(data ?? []);
+      } catch {
+        setDuplicates([]);
+      } finally {
+        setCheckingDuplicates(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [title]);
 
   const addTeamMember = () => {
     if (!newMemberName.trim() || !newMemberEmail.trim()) return;
