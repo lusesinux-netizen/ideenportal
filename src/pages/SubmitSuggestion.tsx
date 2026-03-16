@@ -154,7 +154,55 @@ export default function SubmitSuggestion() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
           <h2 className="font-semibold text-lg">Allgemeine Informationen</h2>
-          <div className="space-y-2"><Label htmlFor="title">Titel des Vorschlags *</Label><Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Kurzer, aussagekräftiger Titel" /></div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Titel des Vorschlags *</Label>
+            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Kurzer, aussagekräftiger Titel" />
+          </div>
+
+          <AnimatePresence>
+            {(duplicates.length > 0 || checkingDuplicates) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="rounded-lg border border-warning/30 bg-warning/5 p-4"
+              >
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    {checkingDuplicates ? (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Prüfe auf ähnliche Vorschläge…
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium mb-2">Möglicherweise ähnliche Vorschläge gefunden:</p>
+                        <ul className="space-y-1.5">
+                          {duplicates.map(d => (
+                            <li key={d.id} className="text-sm">
+                              <Link
+                                to={`/vorschlaege/${d.id}`}
+                                className="text-primary hover:underline font-medium"
+                                target="_blank"
+                              >
+                                {d.title}
+                              </Link>
+                              <span className="text-muted-foreground ml-2 text-xs">
+                                ({d.category} · {d.status})
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Bitte prüfen Sie, ob Ihr Vorschlag bereits eingereicht wurde, bevor Sie fortfahren.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="space-y-2"><Label htmlFor="problem">Beschreibung des Problems *</Label><Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} /></div>
           <div className="space-y-2"><Label htmlFor="solution">Beschreibung der Lösung *</Label><Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} /></div>
           <div className="space-y-2"><Label htmlFor="benefit">Erwarteter Nutzen *</Label><Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} /></div>
