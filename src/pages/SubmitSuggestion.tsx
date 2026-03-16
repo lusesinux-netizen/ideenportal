@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { PlusCircle, X, Upload, Send, Info } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PlusCircle, X, Upload, Send, Info, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { createSuggestion } from '@/lib/supabase-helpers';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const categories = [
   'Dienstleistungsqualität', 'Prozesse / Verwaltung', 'Personal / Organisation',
@@ -41,6 +42,52 @@ export default function SubmitSuggestion() {
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selfDecisionConfirm, setSelfDecisionConfirm] = useState(false);
+  const [duplicates, setDuplicates] = useState<{ id: string; title: string; status: string; category: string }[]>([]);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+
+  // Debounced duplicate check on title change
+  useEffect(() => {
+    const trimmed = title.trim();
+    if (trimmed.length < 5) {
+      setDuplicates([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setCheckingDuplicates(true);
+      try {
+        // Split into keywords (3+ chars) and search for matches
+        const keywords = trimmed
+          .split(/\s+/)
+          .filter(w => w.length >= 3)
+          .slice(0, 4);
+
+        if (keywords.length === 0) {
+          setDuplicates([]);
+          return;
+        }
+
+        // Build an OR filter matching any keyword in title or problem_description
+        const orFilter = keywords
+          .map(k => `title.ilike.%${k}%,problem_description.ilike.%${k}%`)
+          .join(',');
+
+        const { data } = await supabase
+          .from('suggestions')
+          .select('id, title, status, category')
+          .or(orFilter)
+          .limit(5);
+
+        setDuplicates(data ?? []);
+      } catch {
+        setDuplicates([]);
+      } finally {
+        setCheckingDuplicates(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [title]);
 
   const addTeamMember = () => {
     if (!newMemberName.trim() || !newMemberEmail.trim()) return;
@@ -107,7 +154,55 @@ export default function SubmitSuggestion() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
           <h2 className="font-semibold text-lg">Allgemeine Informationen</h2>
-          <div className="space-y-2"><Label htmlFor="title">Titel des Vorschlags *</Label><Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Kurzer, aussagekräftiger Titel" /></div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Titel des Vorschlags *</Label>
+            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Kurzer, aussagekräftiger Titel" />
+          </div>
+
+          <AnimatePresence>
+            {(duplicates.length > 0 || checkingDuplicates) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="rounded-lg border border-warning/30 bg-warning/5 p-4"
+              >
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    {checkingDuplicates ? (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Prüfe auf ähnliche Vorschläge…
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium mb-2">Möglicherweise ähnliche Vorschläge gefunden:</p>
+                        <ul className="space-y-1.5">
+                          {duplicates.map(d => (
+                            <li key={d.id} className="text-sm">
+                              <Link
+                                to={`/vorschlaege/${d.id}`}
+                                className="text-primary hover:underline font-medium"
+                                target="_blank"
+                              >
+                                {d.title}
+                              </Link>
+                              <span className="text-muted-foreground ml-2 text-xs">
+                                ({d.category} · {d.status})
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Bitte prüfen Sie, ob Ihr Vorschlag bereits eingereicht wurde, bevor Sie fortfahren.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="space-y-2"><Label htmlFor="problem">Beschreibung des Problems *</Label><Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} /></div>
           <div className="space-y-2"><Label htmlFor="solution">Beschreibung der Lösung *</Label><Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} /></div>
           <div className="space-y-2"><Label htmlFor="benefit">Erwarteter Nutzen *</Label><Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} /></div>
