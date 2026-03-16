@@ -150,6 +150,18 @@ export default function SubmitSuggestion() {
           </div>
         </section>
 
+        <div className="flex items-start gap-3 rounded-xl border bg-card p-5 shadow-card">
+          <Checkbox
+            id="selfDecisionConfirm"
+            checked={selfDecisionConfirm}
+            onCheckedChange={(checked) => setSelfDecisionConfirm(checked === true)}
+            className="mt-0.5"
+          />
+          <Label htmlFor="selfDecisionConfirm" className="text-sm leading-relaxed cursor-pointer">
+            Ich bestätige, dass dieser Vorschlag <strong>nicht in meinem eigenen Aufgabenbereich eigenständig umsetzbar</strong> ist und daher als prämienberechtigter Verbesserungsvorschlag eingereicht wird. *
+          </Label>
+        </div>
+
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => navigate('/')}>Abbrechen</Button>
           <Button type="submit" className="gradient-primary text-primary-foreground hover:opacity-90" disabled={submitting}>
