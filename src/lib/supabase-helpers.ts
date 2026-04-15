@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesUpdate } from '@/integrations/supabase/types';
 
 export type DbSuggestion = {
   id: string;
@@ -72,7 +73,7 @@ export async function createSuggestion(
   return data;
 }
 
-export async function updateSuggestion(id: string, updates: Record<string, any>) {
+export async function updateSuggestion(id: string, updates: TablesUpdate<'suggestions'>) {
   const { error } = await supabase
     .from('suggestions')
     .update(updates)
