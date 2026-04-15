@@ -20,8 +20,16 @@ export default function Auth() {
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
 
+  const ALLOWED_DOMAIN = '@hwk-berlin.de';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.toLowerCase().endsWith(ALLOWED_DOMAIN)) {
+      toast.error('Nur E-Mail-Adressen mit @hwk-berlin.de sind zugelassen.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
