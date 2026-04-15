@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, ChevronDown, ChevronUp, Calendar, MapPin, Users, Award, Euro, Save, AlertTriangle, Trash2 } from 'lucide-react';
+import { Briefcase, ChevronDown, ChevronUp, Calendar, MapPin, Users, Award, Euro, Save, AlertTriangle, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -249,7 +249,25 @@ export default function ManagementView() {
           </h1>
           <p className="mt-1 text-muted-foreground">Individuelle Prämienfestlegung für Klasse-4-Vorschläge</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm" disabled={suggestions.length === 0} onClick={() => {
+            const headers = ['Titel','Kategorie','Status','Bereich','Problem','Lösung','Nutzen','Realisierbarkeit','Geschätzte Einsparung','Prämienklasse','Prämienart','Jury-Kommentar','Eingereicht am'];
+            const escape = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
+            const rows = suggestions.map(s => [
+              s.title, s.category, s.status, scopeLabels[s.scope] || s.scope,
+              s.problem_description, s.solution_description, s.expected_benefit, s.feasibility,
+              s.estimated_savings || '', s.premium_class?.toString() || '', s.premium_choice || '',
+              s.jury_comment || '', new Date(s.created_at).toLocaleDateString('de-DE'),
+            ].map(escape).join(';'));
+            const csv = '\uFEFF' + [headers.join(';'), ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `vorschlaege_export_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+            URL.revokeObjectURL(url);
+            toast.success(`${suggestions.length} Vorschläge exportiert`);
+          }}>
+            <Download className="mr-1.5 h-3.5 w-3.5" /> CSV-Export
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={suggestions.length === 0 || deleting}>
