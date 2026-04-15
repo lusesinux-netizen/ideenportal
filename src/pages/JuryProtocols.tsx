@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -132,6 +133,21 @@ export default function JuryProtocols() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (protocolId: string) => {
+      const { error: sigErr } = await supabase.from('jury_protocol_signatures').delete().eq('protocol_id', protocolId);
+      if (sigErr) throw sigErr;
+      const { error } = await supabase.from('jury_protocols').delete().eq('id', protocolId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jury_protocols'] });
+      queryClient.invalidateQueries({ queryKey: ['jury_protocol_signatures'] });
+      toast.success('Protokoll gelöscht');
+    },
+    onError: () => toast.error('Fehler beim Löschen'),
+  });
+
   const getProfileName = (id: string) => profiles.find(p => p.id === id)?.display_name || 'Unbekannt';
 
   const toggleAttendee = (role: string) => {
@@ -182,6 +198,27 @@ export default function JuryProtocols() {
                         </span>
                       </div>
                     </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Protokoll löschen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Das Protokoll vom {new Date(protocol.meeting_date).toLocaleDateString('de-DE')} wird unwiderruflich gelöscht, einschließlich aller Unterschriften.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteMutation.mutate(protocol.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Löschen
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
