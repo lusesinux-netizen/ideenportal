@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, ChevronDown, ChevronUp, Calendar, MapPin, Users, Award, Euro, Save, AlertTriangle, Trash2 } from 'lucide-react';
+import { Briefcase, ChevronDown, ChevronUp, Calendar, MapPin, Users, Award, Euro, Save, AlertTriangle, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
