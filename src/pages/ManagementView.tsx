@@ -286,6 +286,7 @@ export default function ManagementView() {
               {tab.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
