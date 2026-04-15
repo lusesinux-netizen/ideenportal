@@ -206,8 +206,29 @@ function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
 }
 
 export default function ManagementView() {
+  const queryClient = useQueryClient();
   const { data: suggestions = [] } = useQuery({ queryKey: ['suggestions'], queryFn: fetchSuggestions });
   const [filter, setFilter] = useState<'offen' | 'erledigt' | 'alle'>('offen');
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      // Delete team members first, then notifications, then suggestions
+      const { error: tmErr } = await supabase.from('suggestion_team_members').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (tmErr) throw tmErr;
+      const { error: nErr } = await supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (nErr) throw nErr;
+      const { error: sErr } = await supabase.from('suggestions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (sErr) throw sErr;
+      queryClient.invalidateQueries({ queryKey: ['suggestions'] });
+      toast.success('Alle Vorschläge wurden gelöscht.');
+    } catch (err: any) {
+      toast.error(err.message || 'Fehler beim Löschen');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const klasse4 = suggestions.filter(s => s.premium_class === 4);
   const openCount = klasse4.filter(s => !s.premium_choice).length;
@@ -228,7 +249,30 @@ export default function ManagementView() {
           </h1>
           <p className="mt-1 text-muted-foreground">Individuelle Prämienfestlegung für Klasse-4-Vorschläge</p>
         </div>
-        <div className="flex rounded-lg border bg-muted/50 p-1">
+        <div className="flex items-center gap-3">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" disabled={suggestions.length === 0 || deleting}>
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                {deleting ? 'Lösche...' : 'Alle Vorschläge löschen'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Alle Vorschläge löschen?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Diese Aktion löscht <strong>alle {suggestions.length} Vorschläge</strong> unwiderruflich, einschließlich aller zugehörigen Daten (Teammitglieder, Benachrichtigungen). Dies kann nicht rückgängig gemacht werden.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Endgültig löschen
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <div className="flex rounded-lg border bg-muted/50 p-1">
           {[
             { value: 'offen' as const, label: `Offen (${openCount})` },
             { value: 'erledigt' as const, label: `Erledigt (${doneCount})` },
