@@ -133,6 +133,21 @@ export default function JuryProtocols() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (protocolId: string) => {
+      const { error: sigErr } = await supabase.from('jury_protocol_signatures').delete().eq('protocol_id', protocolId);
+      if (sigErr) throw sigErr;
+      const { error } = await supabase.from('jury_protocols').delete().eq('id', protocolId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jury_protocols'] });
+      queryClient.invalidateQueries({ queryKey: ['jury_protocol_signatures'] });
+      toast.success('Protokoll gelöscht');
+    },
+    onError: () => toast.error('Fehler beim Löschen'),
+  });
+
   const getProfileName = (id: string) => profiles.find(p => p.id === id)?.display_name || 'Unbekannt';
 
   const toggleAttendee = (role: string) => {
