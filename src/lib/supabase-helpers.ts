@@ -72,7 +72,7 @@ export async function createSuggestion(
   return data;
 }
 
-export async function updateSuggestion(id: string, updates: Record<string, any>) {
+export async function updateSuggestion(id: string, updates: Partial<Tables<'suggestions'>>) {
   const { error } = await supabase
     .from('suggestions')
     .update(updates)
