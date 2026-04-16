@@ -190,9 +190,27 @@ export default function SubmitSuggestion() {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="space-y-2"><Label htmlFor="problem">Beschreibung des Problems *</Label><Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} /></div>
-          <div className="space-y-2"><Label htmlFor="solution">Beschreibung der Lösung *</Label><Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} /></div>
-          <div className="space-y-2"><Label htmlFor="benefit">Erwarteter Nutzen *</Label><Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} /></div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="problem">Beschreibung des Problems *</Label>
+              <AiImproveButton field="problem" text={problem} onImproved={setProblem} context={{ title, category }} />
+            </div>
+            <Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="solution">Beschreibung der Lösung *</Label>
+              <AiImproveButton field="solution" text={solution} onImproved={setSolution} context={{ title, category }} />
+            </div>
+            <Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="benefit">Erwarteter Nutzen *</Label>
+              <AiImproveButton field="benefit" text={benefit} onImproved={setBenefit} context={{ title, category }} />
+            </div>
+            <Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Kategorie *</Label>
