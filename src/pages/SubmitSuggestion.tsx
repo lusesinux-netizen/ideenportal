@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createSuggestion } from '@/lib/supabase-helpers';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import AiImproveButton from '@/components/AiImproveButton';
 
 const categories = [
   'Dienstleistungsqualität', 'Prozesse / Verwaltung', 'Personal / Organisation',
