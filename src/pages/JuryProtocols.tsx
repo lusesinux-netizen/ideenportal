@@ -190,9 +190,9 @@ export default function JuryProtocols() {
           <p className="mt-1 text-muted-foreground">Protokolle der Jury-Sitzungen (§5.6)</p>
         </div>
         <div className="flex gap-2">
-          {hasRole('geschaeftsfuehrung') && (
-            <Button variant="outline" onClick={exportCSV}>
-              <Download className="mr-2 h-4 w-4" /> CSV-Export
+          <Button variant="outline" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" /> CSV-Export
+          </Button>
             </Button>
           )}
           <Button onClick={() => setCreateOpen(true)}>
