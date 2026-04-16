@@ -150,6 +150,10 @@ export default function JuryProtocols() {
 
   const getProfileName = (id: string) => profiles.find(p => p.id === id)?.display_name || 'Unbekannt';
 
+  const toggleAttendee = (role: string) => {
+    setAttendees(prev => prev.includes(role) ? prev.filter(a => a !== role) : [...prev, role]);
+  };
+
   const exportCSV = () => {
     if (protocols.length === 0) return toast.error('Keine Protokolle zum Exportieren');
     const header = ['Sitzungsdatum', 'Beschlussfähig', 'Anwesende', 'Beratung/Notizen', 'Beschlüsse', 'Unterschriften', 'Erstellt von', 'Erstellt am'];
