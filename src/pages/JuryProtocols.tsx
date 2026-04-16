@@ -193,8 +193,6 @@ export default function JuryProtocols() {
           <Button variant="outline" onClick={exportCSV}>
             <Download className="mr-2 h-4 w-4" /> CSV-Export
           </Button>
-            </Button>
-          )}
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Neues Protokoll
           </Button>
