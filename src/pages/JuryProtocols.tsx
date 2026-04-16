@@ -220,6 +220,7 @@ export default function JuryProtocols() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
