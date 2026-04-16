@@ -227,7 +227,13 @@ export default function SubmitSuggestion() {
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
           <h2 className="font-semibold text-lg">Weitere Angaben</h2>
           <div className="space-y-2"><Label htmlFor="savings">Geschätzte Einsparungen (optional)</Label><Input id="savings" value={savings} onChange={e => setSavings(e.target.value)} placeholder="z. B. 5.000 € pro Jahr" /></div>
-          <div className="space-y-2"><Label htmlFor="feasibility">Realisierbarkeit *</Label><Textarea id="feasibility" value={feasibility} onChange={e => setFeasibility(e.target.value)} placeholder="Wie schätzen Sie die Umsetzbarkeit ein?" rows={2} /></div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="feasibility">Realisierbarkeit *</Label>
+              <AiImproveButton field="feasibility" text={feasibility} onImproved={setFeasibility} context={{ title, category }} />
+            </div>
+            <Textarea id="feasibility" value={feasibility} onChange={e => setFeasibility(e.target.value)} placeholder="Wie schätzen Sie die Umsetzbarkeit ein?" rows={2} />
+          </div>
         </section>
 
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
