@@ -40,7 +40,7 @@ const JURY_ROLES = [
 ];
 
 export default function JuryProtocols() {
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [meetingDate, setMeetingDate] = useState('');
@@ -198,6 +198,7 @@ export default function JuryProtocols() {
                         </span>
                       </div>
                     </div>
+                    {hasRole('geschaeftsfuehrung') && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
@@ -219,6 +220,7 @@ export default function JuryProtocols() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
