@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2 } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -154,6 +154,34 @@ export default function JuryProtocols() {
     setAttendees(prev => prev.includes(role) ? prev.filter(a => a !== role) : [...prev, role]);
   };
 
+  const exportCSV = () => {
+    if (protocols.length === 0) return toast.error('Keine Protokolle zum Exportieren');
+    const header = ['Sitzungsdatum', 'Beschlussfähig', 'Anwesende', 'Beratung/Notizen', 'Beschlüsse', 'Unterschriften', 'Erstellt von', 'Erstellt am'];
+    const rows = protocols.map(p => {
+      const sigs = signatures.filter(s => s.protocol_id === p.id).map(s => `${getProfileName(s.user_id)} (${new Date(s.signed_at).toLocaleDateString('de-DE')})`).join(', ');
+      const decs = Array.isArray(p.decisions) ? p.decisions.map((d: any) => d.text || String(d)).join('; ') : '';
+      return [
+        new Date(p.meeting_date).toLocaleDateString('de-DE'),
+        p.is_quorate ? 'Ja' : 'Nein',
+        p.attendees.join(', '),
+        p.notes,
+        decs,
+        sigs || '-',
+        getProfileName(p.created_by),
+        new Date(p.created_at).toLocaleDateString('de-DE'),
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';');
+    });
+    const csv = '\uFEFF' + header.join(';') + '\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jury_protokolle_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exportiert');
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
@@ -161,9 +189,16 @@ export default function JuryProtocols() {
           <h1 className="text-2xl font-bold flex items-center gap-2"><FileText className="h-6 w-6 text-primary" /> Sitzungsprotokolle</h1>
           <p className="mt-1 text-muted-foreground">Protokolle der Jury-Sitzungen (§5.6)</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Neues Protokoll
-        </Button>
+        <div className="flex gap-2">
+          {hasRole('geschaeftsfuehrung') && (
+            <Button variant="outline" onClick={exportCSV}>
+              <Download className="mr-2 h-4 w-4" /> CSV-Export
+            </Button>
+          )}
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Neues Protokoll
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
