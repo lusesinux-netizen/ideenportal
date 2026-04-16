@@ -198,6 +198,7 @@ export default function JuryProtocols() {
                         </span>
                       </div>
                     </div>
+                    {hasRole('geschaeftsfuehrung') && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
