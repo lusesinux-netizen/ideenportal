@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createSuggestion } from '@/lib/supabase-helpers';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import AiImproveButton from '@/components/AiImproveButton';
 
 const categories = [
   'Dienstleistungsqualität', 'Prozesse / Verwaltung', 'Personal / Organisation',
@@ -190,9 +191,27 @@ export default function SubmitSuggestion() {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="space-y-2"><Label htmlFor="problem">Beschreibung des Problems *</Label><Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} /></div>
-          <div className="space-y-2"><Label htmlFor="solution">Beschreibung der Lösung *</Label><Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} /></div>
-          <div className="space-y-2"><Label htmlFor="benefit">Erwarteter Nutzen *</Label><Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} /></div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="problem">Beschreibung des Problems *</Label>
+              <AiImproveButton field="problem" text={problem} onImproved={setProblem} context={{ title, category }} />
+            </div>
+            <Textarea id="problem" value={problem} onChange={e => setProblem(e.target.value)} placeholder="Beschreiben Sie die aktuelle Situation..." rows={3} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="solution">Beschreibung der Lösung *</Label>
+              <AiImproveButton field="solution" text={solution} onImproved={setSolution} context={{ title, category }} />
+            </div>
+            <Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Beschreiben Sie Ihren Lösungsvorschlag..." rows={3} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="benefit">Erwarteter Nutzen *</Label>
+              <AiImproveButton field="benefit" text={benefit} onImproved={setBenefit} context={{ title, category }} />
+            </div>
+            <Textarea id="benefit" value={benefit} onChange={e => setBenefit(e.target.value)} placeholder="Welchen Nutzen erwarten Sie?" rows={2} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Kategorie *</Label>
@@ -208,7 +227,13 @@ export default function SubmitSuggestion() {
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
           <h2 className="font-semibold text-lg">Weitere Angaben</h2>
           <div className="space-y-2"><Label htmlFor="savings">Geschätzte Einsparungen (optional)</Label><Input id="savings" value={savings} onChange={e => setSavings(e.target.value)} placeholder="z. B. 5.000 € pro Jahr" /></div>
-          <div className="space-y-2"><Label htmlFor="feasibility">Realisierbarkeit *</Label><Textarea id="feasibility" value={feasibility} onChange={e => setFeasibility(e.target.value)} placeholder="Wie schätzen Sie die Umsetzbarkeit ein?" rows={2} /></div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="feasibility">Realisierbarkeit *</Label>
+              <AiImproveButton field="feasibility" text={feasibility} onImproved={setFeasibility} context={{ title, category }} />
+            </div>
+            <Textarea id="feasibility" value={feasibility} onChange={e => setFeasibility(e.target.value)} placeholder="Wie schätzen Sie die Umsetzbarkeit ein?" rows={2} />
+          </div>
         </section>
 
         <section className="rounded-xl border bg-card p-6 shadow-card space-y-5">
