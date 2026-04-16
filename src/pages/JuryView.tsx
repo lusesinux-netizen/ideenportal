@@ -124,19 +124,26 @@ function JuryReviewCard({ suggestion: s, isOwnSuggestion }: { suggestion: DbSugg
                   </div>
                 </div>
               ) : (
-                <div className="rounded-lg border bg-muted/30 p-5 space-y-4">
-                  <h4 className="font-semibold flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Jury-Bewertung</h4>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Status ändern</Label>
-                      <Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{statusActions.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent></Select>
+                  <div className="rounded-lg border bg-muted/30 p-5 space-y-4">
+                    <h4 className="font-semibold flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Jury-Bewertung</h4>
+
+                    <AiJuryAssessment
+                      suggestion={s}
+                      onApplyComment={(c) => setComment(c)}
+                      onApplyPremiumClass={(cls) => setPremiumClass(cls)}
+                    />
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Status ändern</Label>
+                        <Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{statusActions.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent></Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Prämienklasse</Label>
+                        <Select value={premiumClass} onValueChange={setPremiumClass}><SelectTrigger><SelectValue placeholder="Klasse wählen" /></SelectTrigger><SelectContent>{premiumOptions.map(p => <SelectItem key={p.value} value={p.value}><Award className="h-3.5 w-3.5 inline mr-1" />{p.label}</SelectItem>)}</SelectContent></Select>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Prämienklasse</Label>
-                      <Select value={premiumClass} onValueChange={setPremiumClass}><SelectTrigger><SelectValue placeholder="Klasse wählen" /></SelectTrigger><SelectContent>{premiumOptions.map(p => <SelectItem key={p.value} value={p.value}><Award className="h-3.5 w-3.5 inline mr-1" />{p.label}</SelectItem>)}</SelectContent></Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2"><Label>Kommentar</Label><Textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Bewertung und Begründung..." rows={3} /></div>
+                    <div className="space-y-2"><Label>Kommentar</Label><Textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Bewertung und Begründung..." rows={3} /></div>
                   <div className="flex justify-end gap-3">
                     <Button variant="outline" size="sm" onClick={() => setExpanded(false)}>Abbrechen</Button>
                     <Button size="sm" className="gradient-primary text-primary-foreground hover:opacity-90" onClick={handleSave} disabled={saving}>{saving ? 'Speichern...' : 'Bewertung speichern'}</Button>
