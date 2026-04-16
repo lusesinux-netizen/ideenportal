@@ -40,7 +40,7 @@ const JURY_ROLES = [
 ];
 
 export default function JuryProtocols() {
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [meetingDate, setMeetingDate] = useState('');
