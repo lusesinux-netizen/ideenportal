@@ -336,6 +336,32 @@ export default function JuryProtocols() {
                     </div>
                   </div>
 
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                      <Lightbulb className="h-3.5 w-3.5" /> Behandelte Verbesserungsvorschläge
+                    </p>
+                    {linkedSugs.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">Keine Vorschläge verknüpft</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {linkedSugs.map(s => (
+                          <Link
+                            key={s.id}
+                            to={`/vorschlaege/${s.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-sm hover:bg-muted hover:border-primary/40 transition-colors max-w-full"
+                            title={s.title}
+                          >
+                            <Lightbulb className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="truncate max-w-[260px]">{s.title}</span>
+                            {s.premium_class && (
+                              <Badge variant="secondary" className="ml-1 text-[10px] h-4 px-1.5">K{s.premium_class}</Badge>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {protocol.notes && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Beratung (vertraulich)</p>
