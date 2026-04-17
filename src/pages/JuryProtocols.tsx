@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2, Download } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2, Download, Sparkles, Loader2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAiAssist } from '@/hooks/useAiAssist';
 
 type Protocol = {
   id: string;
