@@ -195,6 +195,123 @@ Gib eine Bewertung ab.`,
         break;
       }
 
+      case "improve_protocol_notes": {
+        const { text, context } = params;
+        const aiResult = await aiCall([
+          {
+            role: "system",
+            content: `Du bist Protokollführer der Jury für Verbesserungsvorschläge bei der Handwerkskammer Berlin. Du formulierst vertrauliche Beratungsnotizen einer Jury-Sitzung präzise, sachlich und neutral. Behalte alle inhaltlichen Aussagen, verbessere aber Struktur, Klarheit und Wortwahl. Verwende eine sachliche Protokollsprache (z.B. "Die Jury erörterte..."). Antworte IMMER auf Deutsch und gib NUR den verbesserten Text zurück, ohne Erklärungen oder Anführungszeichen.`,
+          },
+          {
+            role: "user",
+            content: `Verbessere folgende Beratungsnotizen einer Jury-Sitzung${context?.meeting_date ? ` vom ${context.meeting_date}` : ""}:
+
+"${text}"`,
+          },
+        ]);
+
+        if (aiResult.error) {
+          return new Response(JSON.stringify({ error: aiResult.error }), {
+            status: aiResult.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        result = { improved_text: aiResult.choices?.[0]?.message?.content?.trim() || text };
+        break;
+      }
+
+      case "improve_decisions": {
+        const { text, context } = params;
+        const aiResult = await aiCall([
+          {
+            role: "system",
+            content: `Du bist Protokollführer der Jury für Verbesserungsvorschläge bei der Handwerkskammer Berlin. Du formulierst Beschlüsse einer Jury-Sitzung in klarer, eindeutiger und rechtssicherer Sprache. Jeder Beschluss steht in einer eigenen Zeile, beginnt mit einem Verb (z.B. "Annimmt...", "Lehnt ab...", "Vertagt..."). Behalte alle Inhalte, optimiere Klarheit und Präzision. Antworte IMMER auf Deutsch und gib NUR die verbesserten Beschlüsse zurück (eine Zeile pro Beschluss, ohne Nummerierung, ohne Erklärungen).`,
+          },
+          {
+            role: "user",
+            content: `Verbessere folgende Beschlüsse einer Jury-Sitzung${context?.meeting_date ? ` vom ${context.meeting_date}` : ""}:
+
+"${text}"`,
+          },
+        ]);
+
+        if (aiResult.error) {
+          return new Response(JSON.stringify({ error: aiResult.error }), {
+            status: aiResult.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        result = { improved_text: aiResult.choices?.[0]?.message?.content?.trim() || text };
+        break;
+      }
+
+      case "draft_decisions_from_notes": {
+        const { notes, context } = params;
+        if (!notes?.trim()) {
+          return new Response(JSON.stringify({ error: "Keine Beratungsnotizen vorhanden" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const aiResult = await aiCall(
+          [
+            {
+              role: "system",
+              content: `Du extrahierst aus Beratungsnotizen einer Jury-Sitzung der Handwerkskammer Berlin die konkreten Beschlüsse. Formuliere jeden Beschluss klar, kurz und eindeutig in einer Zeile. Beginne mit einem Verb (z.B. "Nimmt an...", "Lehnt ab...", "Vertagt..."). Antworte auf Deutsch.`,
+            },
+            {
+              role: "user",
+              content: `Leite aus folgenden Beratungsnotizen${context?.meeting_date ? ` (Sitzung vom ${context.meeting_date})` : ""} die Beschlüsse ab:
+
+"${notes}"`,
+            },
+          ],
+          [
+            {
+              type: "function",
+              function: {
+                name: "draft_decisions",
+                description: "Liste der formulierten Beschlüsse",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    decisions: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Ein Beschluss pro Eintrag, klar und prägnant formuliert",
+                    },
+                  },
+                  required: ["decisions"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          ],
+          { type: "function", function: { name: "draft_decisions" } }
+        );
+
+        if (aiResult.error) {
+          return new Response(JSON.stringify({ error: aiResult.error }), {
+            status: aiResult.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
+        if (toolCall?.function?.arguments) {
+          try {
+            const parsed = JSON.parse(toolCall.function.arguments);
+            result = { decisions: parsed.decisions || [] };
+          } catch {
+            result = { error: "Failed to parse AI response" };
+          }
+        } else {
+          result = { error: "No decisions generated" };
+        }
+        break;
+      }
+
       case "summarize": {
         const { suggestion } = params;
 

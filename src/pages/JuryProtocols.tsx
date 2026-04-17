@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2, Download } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, Calendar, Users, PenLine, Trash2, Download, Sparkles, Loader2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAiAssist } from '@/hooks/useAiAssist';
 
 type Protocol = {
   id: string;
@@ -42,6 +43,7 @@ const JURY_ROLES = [
 export default function JuryProtocols() {
   const { user, hasRole } = useAuth();
   const queryClient = useQueryClient();
+  const { improveProtocolNotes, improveDecisions, draftDecisionsFromNotes, loading: aiLoading } = useAiAssist();
   const [createOpen, setCreateOpen] = useState(false);
   const [meetingDate, setMeetingDate] = useState('');
   const [attendees, setAttendees] = useState<string[]>([]);
@@ -344,11 +346,68 @@ export default function JuryProtocols() {
               )}
             </div>
             <div className="space-y-2">
-              <Label>Beratung & Notizen</Label>
+              <div className="flex items-center justify-between">
+                <Label>Beratung & Notizen</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                  disabled={!notes.trim() || aiLoading['improve_protocol_notes']}
+                  onClick={async () => {
+                    const improved = await improveProtocolNotes(notes, { meeting_date: meetingDate });
+                    if (improved) {
+                      setNotes(improved);
+                      toast.success('Beratungstext verbessert');
+                    }
+                  }}
+                >
+                  {aiLoading['improve_protocol_notes'] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  KI-Verbesserung
+                </Button>
+              </div>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Vertrauliche Beratungsnotizen..." rows={4} />
             </div>
             <div className="space-y-2">
-              <Label>Beschlüsse (ein Beschluss pro Zeile)</Label>
+              <div className="flex items-center justify-between">
+                <Label>Beschlüsse (ein Beschluss pro Zeile)</Label>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                    disabled={!notes.trim() || aiLoading['draft_decisions_from_notes']}
+                    onClick={async () => {
+                      const drafted = await draftDecisionsFromNotes(notes, { meeting_date: meetingDate });
+                      if (drafted && drafted.length > 0) {
+                        setDecisions(drafted.join('\n'));
+                        toast.success(`${drafted.length} Beschluss-Entwürfe generiert`);
+                      }
+                    }}
+                  >
+                    {aiLoading['draft_decisions_from_notes'] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    Aus Notizen ableiten
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                    disabled={!decisions.trim() || aiLoading['improve_decisions']}
+                    onClick={async () => {
+                      const improved = await improveDecisions(decisions, { meeting_date: meetingDate });
+                      if (improved) {
+                        setDecisions(improved);
+                        toast.success('Beschlüsse verbessert');
+                      }
+                    }}
+                  >
+                    {aiLoading['improve_decisions'] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    KI-Verbesserung
+                  </Button>
+                </div>
+              </div>
               <Textarea value={decisions} onChange={e => setDecisions(e.target.value)} placeholder="Vorschlag X angenommen, Klasse 2&#10;Vorschlag Y abgelehnt" rows={3} />
             </div>
           </div>
