@@ -43,6 +43,42 @@ export type Database = {
           },
         ]
       }
+      jury_protocol_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          protocol_id: string
+          suggestion_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          protocol_id: string
+          suggestion_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          protocol_id?: string
+          suggestion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jury_protocol_suggestions_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "jury_protocols"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jury_protocol_suggestions_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jury_protocols: {
         Row: {
           attendees: string[]

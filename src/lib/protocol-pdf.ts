@@ -18,6 +18,13 @@ type Signature = {
   signed_at: string;
 };
 
+type LinkedSuggestion = {
+  id: string;
+  title: string;
+  status?: string;
+  premium_class?: number | null;
+};
+
 const PAGE_MARGIN = 18;
 const PAGE_WIDTH = 210; // A4
 const PAGE_HEIGHT = 297;
@@ -26,7 +33,8 @@ const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
 export function exportProtocolPdf(
   protocol: Protocol,
   signatures: Signature[],
-  getProfileName: (id: string) => string
+  getProfileName: (id: string) => string,
+  linkedSuggestions: LinkedSuggestion[] = []
 ) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   let y = PAGE_MARGIN;
@@ -96,6 +104,17 @@ export function exportProtocolPdf(
     writeWrapped('— Keine Angaben —');
   } else {
     protocol.attendees.forEach(a => writeWrapped(`• ${a}`));
+  }
+
+  // Behandelte Vorschläge
+  sectionTitle('Behandelte Verbesserungsvorschläge');
+  if (linkedSuggestions.length === 0) {
+    writeWrapped('— Keine Vorschläge verknüpft —');
+  } else {
+    linkedSuggestions.forEach((s, i) => {
+      const meta = [s.status, s.premium_class ? `Klasse ${s.premium_class}` : null].filter(Boolean).join(' · ');
+      writeWrapped(`${i + 1}. ${s.title}${meta ? ` (${meta})` : ''}`);
+    });
   }
 
   // Beratung

@@ -16,6 +16,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAiAssist } from '@/hooks/useAiAssist';
 import { exportProtocolPdf } from '@/lib/protocol-pdf';
+import { Lightbulb } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type Protocol = {
   id: string;
@@ -26,6 +28,19 @@ type Protocol = {
   decisions: any[];
   created_by: string;
   created_at: string;
+};
+
+type ProtocolSuggestionLink = {
+  id: string;
+  protocol_id: string;
+  suggestion_id: string;
+};
+
+type SuggestionLite = {
+  id: string;
+  title: string;
+  status: string;
+  premium_class: number | null;
 };
 
 type Signature = {
@@ -50,6 +65,7 @@ export default function JuryProtocols() {
   const [attendees, setAttendees] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [decisions, setDecisions] = useState('');
+  const [linkedSuggestionIds, setLinkedSuggestionIds] = useState<string[]>([]);
 
   const { data: protocols = [], isLoading } = useQuery({
     queryKey: ['jury_protocols'],
@@ -83,6 +99,29 @@ export default function JuryProtocols() {
     },
   });
 
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['suggestions_lite'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('id, title, status, premium_class')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as SuggestionLite[];
+    },
+  });
+
+  const { data: protocolSuggestions = [] } = useQuery({
+    queryKey: ['jury_protocol_suggestions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('jury_protocol_suggestions')
+        .select('*');
+      if (error) throw error;
+      return data as ProtocolSuggestionLink[];
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async () => {
       const isQuorate = attendees.length === JURY_ROLES.length;
@@ -93,24 +132,33 @@ export default function JuryProtocols() {
         }
       } catch { /* ignore */ }
 
-      const { error } = await supabase.from('jury_protocols').insert({
+      const { data: inserted, error } = await supabase.from('jury_protocols').insert({
         meeting_date: meetingDate,
         attendees,
         is_quorate: isQuorate,
         notes,
         decisions: parsedDecisions,
         created_by: user!.id,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      if (inserted && linkedSuggestionIds.length > 0) {
+        const { error: linkErr } = await supabase
+          .from('jury_protocol_suggestions')
+          .insert(linkedSuggestionIds.map(sid => ({ protocol_id: inserted.id, suggestion_id: sid })));
+        if (linkErr) throw linkErr;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jury_protocols'] });
+      queryClient.invalidateQueries({ queryKey: ['jury_protocol_suggestions'] });
       toast.success('Protokoll erstellt');
       setCreateOpen(false);
       setMeetingDate('');
       setAttendees([]);
       setNotes('');
       setDecisions('');
+      setLinkedSuggestionIds([]);
     },
     onError: () => toast.error('Fehler beim Erstellen'),
   });
@@ -215,6 +263,8 @@ export default function JuryProtocols() {
             const protocolSigs = signatures.filter(s => s.protocol_id === protocol.id);
             const hasSigned = protocolSigs.some(s => s.user_id === user?.id);
             const decisions = Array.isArray(protocol.decisions) ? protocol.decisions : [];
+            const linkedSugIds = protocolSuggestions.filter(l => l.protocol_id === protocol.id).map(l => l.suggestion_id);
+            const linkedSugs = suggestions.filter(s => linkedSugIds.includes(s.id));
 
             return (
               <Card key={protocol.id}>
@@ -225,12 +275,15 @@ export default function JuryProtocols() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         Sitzung vom {new Date(protocol.meeting_date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <Badge variant={protocol.is_quorate ? 'default' : 'destructive'}>
                           {protocol.is_quorate ? 'Beschlussfähig' : 'Nicht beschlussfähig'}
                         </Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Users className="h-3 w-3" /> {protocol.attendees.length}/{JURY_ROLES.length} Mitglieder
+                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Lightbulb className="h-3 w-3" /> {linkedSugs.length} {linkedSugs.length === 1 ? 'Vorschlag' : 'Vorschläge'}
                         </span>
                       </div>
                     </div>
@@ -241,7 +294,7 @@ export default function JuryProtocols() {
                         className="text-muted-foreground hover:text-primary"
                         title="Als PDF exportieren"
                         onClick={() => {
-                          exportProtocolPdf(protocol, signatures, getProfileName);
+                          exportProtocolPdf(protocol, signatures, getProfileName, linkedSugs);
                           toast.success('PDF wird heruntergeladen');
                         }}
                       >
@@ -281,6 +334,32 @@ export default function JuryProtocols() {
                         <Badge key={a} variant="outline">{a}</Badge>
                       ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                      <Lightbulb className="h-3.5 w-3.5" /> Behandelte Verbesserungsvorschläge
+                    </p>
+                    {linkedSugs.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">Keine Vorschläge verknüpft</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {linkedSugs.map(s => (
+                          <Link
+                            key={s.id}
+                            to={`/vorschlaege/${s.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-sm hover:bg-muted hover:border-primary/40 transition-colors max-w-full"
+                            title={s.title}
+                          >
+                            <Lightbulb className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="truncate max-w-[260px]">{s.title}</span>
+                            {s.premium_class && (
+                              <Badge variant="secondary" className="ml-1 text-[10px] h-4 px-1.5">K{s.premium_class}</Badge>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {protocol.notes && (
@@ -333,7 +412,7 @@ export default function JuryProtocols() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Neues Sitzungsprotokoll</DialogTitle>
             <DialogDescription>Protokoll gemäß §5.6 der Dienstvereinbarung.</DialogDescription>
@@ -358,6 +437,36 @@ export default function JuryProtocols() {
               ))}
               {attendees.length === JURY_ROLES.length && (
                 <Badge className="mt-1">Beschlussfähig ✓</Badge>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Behandelte Verbesserungsvorschläge</Label>
+              <p className="text-xs text-muted-foreground">Wähle alle Vorschläge aus, die in dieser Sitzung beraten wurden.</p>
+              <div className="max-h-52 overflow-y-auto rounded-md border border-border divide-y divide-border">
+                {suggestions.length === 0 ? (
+                  <p className="p-3 text-sm text-muted-foreground italic">Keine Vorschläge vorhanden.</p>
+                ) : (
+                  suggestions.map(s => {
+                    const checked = linkedSuggestionIds.includes(s.id);
+                    return (
+                      <label key={s.id} className="flex items-start gap-2 p-2 hover:bg-muted/40 cursor-pointer">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => setLinkedSuggestionIds(prev =>
+                            prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id]
+                          )}
+                        />
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm truncate">{s.title}</span>
+                          <span className="block text-xs text-muted-foreground">Status: {s.status}{s.premium_class ? ` · Klasse ${s.premium_class}` : ''}</span>
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+              {linkedSuggestionIds.length > 0 && (
+                <p className="text-xs text-muted-foreground">{linkedSuggestionIds.length} ausgewählt</p>
               )}
             </div>
             <div className="space-y-2">
