@@ -35,6 +35,33 @@ export function useAiAssist() {
     return result?.improved_text || null;
   };
 
+  const improveProtocolNotes = async (text: string, context?: { meeting_date?: string }) => {
+    if (!text.trim()) {
+      toast.error('Bitte geben Sie zuerst Beratungsnotizen ein.');
+      return null;
+    }
+    const result = await callAi('improve_protocol_notes', { text, context });
+    return result?.improved_text || null;
+  };
+
+  const improveDecisions = async (text: string, context?: { meeting_date?: string }) => {
+    if (!text.trim()) {
+      toast.error('Bitte geben Sie zuerst Beschlüsse ein.');
+      return null;
+    }
+    const result = await callAi('improve_decisions', { text, context });
+    return result?.improved_text || null;
+  };
+
+  const draftDecisionsFromNotes = async (notes: string, context?: { meeting_date?: string }): Promise<string[] | null> => {
+    if (!notes.trim()) {
+      toast.error('Bitte geben Sie zuerst Beratungsnotizen ein.');
+      return null;
+    }
+    const result = await callAi('draft_decisions_from_notes', { notes, context });
+    return result?.decisions || null;
+  };
+
   const getJuryAssessment = async (suggestion: any) => {
     const result = await callAi('jury_assessment', { suggestion });
     return result?.assessment || null;
@@ -48,6 +75,9 @@ export function useAiAssist() {
   return {
     loading,
     improveText,
+    improveProtocolNotes,
+    improveDecisions,
+    draftDecisionsFromNotes,
     getJuryAssessment,
     getSummary,
   };
