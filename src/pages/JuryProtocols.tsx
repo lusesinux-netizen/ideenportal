@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAiAssist } from '@/hooks/useAiAssist';
+import { exportProtocolPdf } from '@/lib/protocol-pdf';
 
 type Protocol = {
   id: string;
