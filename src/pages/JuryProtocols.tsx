@@ -275,14 +275,29 @@ export default function JuryProtocols() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         Sitzung vom {new Date(protocol.meeting_date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <Badge variant={protocol.is_quorate ? 'default' : 'destructive'}>
                           {protocol.is_quorate ? 'Beschlussfähig' : 'Nicht beschlussfähig'}
                         </Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Users className="h-3 w-3" /> {protocol.attendees.length}/{JURY_ROLES.length} Mitglieder
                         </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Lightbulb className="h-3 w-3" /> {linkedSugs.length} {linkedSugs.length === 1 ? 'Vorschlag' : 'Vorschläge'}
+                        </span>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary"
+                        title="Als PDF exportieren"
+                        onClick={() => {
+                          exportProtocolPdf(protocol, signatures, getProfileName, linkedSugs);
+                          toast.success('PDF wird heruntergeladen');
+                        }}
+                      >
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
