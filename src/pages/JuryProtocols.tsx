@@ -16,6 +16,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAiAssist } from '@/hooks/useAiAssist';
 import { exportProtocolPdf } from '@/lib/protocol-pdf';
+import { Lightbulb } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type Protocol = {
   id: string;
@@ -26,6 +28,19 @@ type Protocol = {
   decisions: any[];
   created_by: string;
   created_at: string;
+};
+
+type ProtocolSuggestionLink = {
+  id: string;
+  protocol_id: string;
+  suggestion_id: string;
+};
+
+type SuggestionLite = {
+  id: string;
+  title: string;
+  status: string;
+  premium_class: number | null;
 };
 
 type Signature = {
