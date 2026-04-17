@@ -263,6 +263,8 @@ export default function JuryProtocols() {
             const protocolSigs = signatures.filter(s => s.protocol_id === protocol.id);
             const hasSigned = protocolSigs.some(s => s.user_id === user?.id);
             const decisions = Array.isArray(protocol.decisions) ? protocol.decisions : [];
+            const linkedSugIds = protocolSuggestions.filter(l => l.protocol_id === protocol.id).map(l => l.suggestion_id);
+            const linkedSugs = suggestions.filter(s => linkedSugIds.includes(s.id));
 
             return (
               <Card key={protocol.id}>
