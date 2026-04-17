@@ -412,7 +412,7 @@ export default function JuryProtocols() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Neues Sitzungsprotokoll</DialogTitle>
             <DialogDescription>Protokoll gemäß §5.6 der Dienstvereinbarung.</DialogDescription>
