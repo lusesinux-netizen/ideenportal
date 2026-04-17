@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAiAssist } from '@/hooks/useAiAssist';
+import { exportProtocolPdf } from '@/lib/protocol-pdf';
 
 type Protocol = {
   id: string;
@@ -233,29 +234,43 @@ export default function JuryProtocols() {
                         </span>
                       </div>
                     </div>
-                    {hasRole('geschaeftsfuehrung') && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Protokoll löschen?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Das Protokoll vom {new Date(protocol.meeting_date).toLocaleDateString('de-DE')} wird unwiderruflich gelöscht, einschließlich aller Unterschriften.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteMutation.mutate(protocol.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Löschen
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary"
+                        title="Als PDF exportieren"
+                        onClick={() => {
+                          exportProtocolPdf(protocol, signatures, getProfileName);
+                          toast.success('PDF wird heruntergeladen');
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      {hasRole('geschaeftsfuehrung') && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Protokoll löschen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Das Protokoll vom {new Date(protocol.meeting_date).toLocaleDateString('de-DE')} wird unwiderruflich gelöscht, einschließlich aller Unterschriften.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(protocol.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Löschen
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
