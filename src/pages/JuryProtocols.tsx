@@ -66,6 +66,8 @@ export default function JuryProtocols() {
   const [notes, setNotes] = useState('');
   const [decisions, setDecisions] = useState('');
   const [linkedSuggestionIds, setLinkedSuggestionIds] = useState<string[]>([]);
+
+  const { data: protocols = [], isLoading } = useQuery({
     queryKey: ['jury_protocols'],
     queryFn: async () => {
       const { data, error } = await supabase
