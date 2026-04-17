@@ -106,6 +106,17 @@ export function exportProtocolPdf(
     protocol.attendees.forEach(a => writeWrapped(`• ${a}`));
   }
 
+  // Behandelte Vorschläge
+  sectionTitle('Behandelte Verbesserungsvorschläge');
+  if (linkedSuggestions.length === 0) {
+    writeWrapped('— Keine Vorschläge verknüpft —');
+  } else {
+    linkedSuggestions.forEach((s, i) => {
+      const meta = [s.status, s.premium_class ? `Klasse ${s.premium_class}` : null].filter(Boolean).join(' · ');
+      writeWrapped(`${i + 1}. ${s.title}${meta ? ` (${meta})` : ''}`);
+    });
+  }
+
   // Beratung
   sectionTitle('Beratung & Notizen (vertraulich)');
   if (protocol.notes?.trim()) {
