@@ -43,6 +43,7 @@ const JURY_ROLES = [
 export default function JuryProtocols() {
   const { user, hasRole } = useAuth();
   const queryClient = useQueryClient();
+  const { improveProtocolNotes, improveDecisions, draftDecisionsFromNotes, loading: aiLoading } = useAiAssist();
   const [createOpen, setCreateOpen] = useState(false);
   const [meetingDate, setMeetingDate] = useState('');
   const [attendees, setAttendees] = useState<string[]>([]);
