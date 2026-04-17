@@ -440,6 +440,36 @@ export default function JuryProtocols() {
               )}
             </div>
             <div className="space-y-2">
+              <Label>Behandelte Verbesserungsvorschläge</Label>
+              <p className="text-xs text-muted-foreground">Wähle alle Vorschläge aus, die in dieser Sitzung beraten wurden.</p>
+              <div className="max-h-52 overflow-y-auto rounded-md border border-border divide-y divide-border">
+                {suggestions.length === 0 ? (
+                  <p className="p-3 text-sm text-muted-foreground italic">Keine Vorschläge vorhanden.</p>
+                ) : (
+                  suggestions.map(s => {
+                    const checked = linkedSuggestionIds.includes(s.id);
+                    return (
+                      <label key={s.id} className="flex items-start gap-2 p-2 hover:bg-muted/40 cursor-pointer">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => setLinkedSuggestionIds(prev =>
+                            prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id]
+                          )}
+                        />
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm truncate">{s.title}</span>
+                          <span className="block text-xs text-muted-foreground">Status: {s.status}{s.premium_class ? ` · Klasse ${s.premium_class}` : ''}</span>
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+              {linkedSuggestionIds.length > 0 && (
+                <p className="text-xs text-muted-foreground">{linkedSuggestionIds.length} ausgewählt</p>
+              )}
+            </div>
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Beratung & Notizen</Label>
                 <Button
