@@ -99,6 +99,29 @@ export default function JuryProtocols() {
     },
   });
 
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['suggestions_lite'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('id, title, status, premium_class')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as SuggestionLite[];
+    },
+  });
+
+  const { data: protocolSuggestions = [] } = useQuery({
+    queryKey: ['jury_protocol_suggestions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('jury_protocol_suggestions')
+        .select('*');
+      if (error) throw error;
+      return data as ProtocolSuggestionLink[];
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async () => {
       const isQuorate = attendees.length === JURY_ROLES.length;
@@ -109,24 +132,33 @@ export default function JuryProtocols() {
         }
       } catch { /* ignore */ }
 
-      const { error } = await supabase.from('jury_protocols').insert({
+      const { data: inserted, error } = await supabase.from('jury_protocols').insert({
         meeting_date: meetingDate,
         attendees,
         is_quorate: isQuorate,
         notes,
         decisions: parsedDecisions,
         created_by: user!.id,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      if (inserted && linkedSuggestionIds.length > 0) {
+        const { error: linkErr } = await supabase
+          .from('jury_protocol_suggestions')
+          .insert(linkedSuggestionIds.map(sid => ({ protocol_id: inserted.id, suggestion_id: sid })));
+        if (linkErr) throw linkErr;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jury_protocols'] });
+      queryClient.invalidateQueries({ queryKey: ['jury_protocol_suggestions'] });
       toast.success('Protokoll erstellt');
       setCreateOpen(false);
       setMeetingDate('');
       setAttendees([]);
       setNotes('');
       setDecisions('');
+      setLinkedSuggestionIds([]);
     },
     onError: () => toast.error('Fehler beim Erstellen'),
   });
