@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchSuggestions, updateSuggestion, DbSuggestion } from '@/lib/supabase-helpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PREMIUM_CLASSES } from '@/lib/premiums';
 
 const scopeLabels: Record<string, string> = {
   arbeitsplatz: 'Eigener Arbeitsplatz',
@@ -20,30 +21,27 @@ const scopeLabels: Record<string, string> = {
   kammer: 'Gesamte Kammer',
 };
 
-const PREMIUM_INFO: Record<number, { label: string; options: string }> = {
-  1: { label: 'Klasse 1 – Arbeitsplatz', options: '1 Urlaubstag oder 100 €' },
-  2: { label: 'Klasse 2 – Abteilung', options: '2 Urlaubstage oder 200 €' },
-  3: { label: 'Klasse 3 – Organisation', options: '3 Urlaubstage oder 300 €' },
-  4: { label: 'Klasse 4 – Individuell', options: 'Individuelle Festlegung durch GF' },
-};
 
 function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
-  const [premiumAmount, setPremiumAmount] = useState((s as any).premium_amount || '');
-  const [premiumNote, setPremiumNote] = useState((s as any).premium_note || s.jury_comment || '');
-  const [premiumChoice, setPremiumChoice] = useState(s.premium_choice || '');
+  const [premiumAmount, setPremiumAmount] = useState(
+    s.premium_amount != null ? String(s.premium_amount) : ''
+  );
+  const [premiumNote, setPremiumNote] = useState(s.jury_comment || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!premiumChoice) {
-      toast.error('Bitte Prämienart wählen');
+    const amount = parseFloat(premiumAmount.replace(',', '.'));
+    if (!amount || amount <= 0) {
+      toast.error('Bitte geben Sie die Höhe der Geldprämie in € an.');
       return;
     }
     setSaving(true);
     try {
       await updateSuggestion(s.id, {
-        premium_choice: premiumChoice,
+        premium_choice: 'geld',
+        premium_amount: amount,
         jury_comment: premiumNote || null,
       });
       queryClient.invalidateQueries({ queryKey: ['suggestions'] });
@@ -96,15 +94,15 @@ function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
                 <div><p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Realisierbarkeit</p><p className="text-sm leading-relaxed mt-1">{s.feasibility}</p></div>
               </div>
 
-              {s.estimated_savings && (
-                <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 flex gap-3">
-                  <Euro className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold">Geschätzte Einsparung: {s.estimated_savings} €</p>
-                    <p className="text-xs text-muted-foreground mt-1">Die Jury hat diesen Vorschlag als Klasse 4 (wirtschaftlicher Nutzen) eingestuft. Die Prämie wird individuell durch die Geschäftsführung festgelegt.</p>
-                  </div>
+              <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 flex gap-3">
+                <Euro className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold">
+                    {s.estimated_savings ? `Geschätzte Einsparung: ${s.estimated_savings} €` : 'Klasse 4 – Finanzielle Prämie'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{PREMIUM_CLASSES[4].hinweis}</p>
                 </div>
-              )}
+              </div>
 
               {s.jury_comment && (
                 <div>
@@ -126,39 +124,31 @@ function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
 
               <div className="rounded-lg border bg-muted/30 p-5 space-y-4">
                 <h4 className="font-semibold flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-primary" /> Individuelle Prämienfestlegung
+                  <Briefcase className="h-4 w-4 text-primary" /> Finanzielle Prämie festlegen
                 </h4>
+
+                <p className="text-sm text-muted-foreground">
+                  Klasse 4 wird ausschließlich finanziell prämiert – Urlaubstage sind hier nicht vorgesehen.
+                </p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Prämienart</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={premiumChoice === 'geld' ? 'default' : 'outline'}
-                        onClick={() => setPremiumChoice('geld')}
-                      >
-                        <Euro className="mr-1.5 h-3.5 w-3.5" /> Geldprämie
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={premiumChoice === 'urlaub' ? 'default' : 'outline'}
-                        onClick={() => setPremiumChoice('urlaub')}
-                      >
-                        <Calendar className="mr-1.5 h-3.5 w-3.5" /> Urlaubstage
-                      </Button>
+                    <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm">
+                      <Euro className="h-4 w-4 text-success" />
+                      <span className="font-medium">Geldprämie</span>
+                      <Badge variant="secondary" className="ml-auto text-[10px]">Klasse 4</Badge>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>{premiumChoice === 'urlaub' ? 'Anzahl Urlaubstage' : 'Betrag in €'}</Label>
+                    <Label htmlFor={`premium-amount-${s.id}`}>Höhe der Prämie in €</Label>
                     <Input
+                      id={`premium-amount-${s.id}`}
                       type="number"
                       min="1"
+                      step="0.01"
                       value={premiumAmount}
                       onChange={e => setPremiumAmount(e.target.value)}
-                      placeholder={premiumChoice === 'urlaub' ? 'z.B. 5' : 'z.B. 1000'}
+                      placeholder="z.B. 1000"
                     />
                   </div>
                 </div>
@@ -167,9 +157,7 @@ function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
                   <div className="rounded-md bg-info/10 border border-info/20 p-3 text-sm">
                     <p className="font-medium text-info">Aufteilung auf {teamCount + 1} Personen:</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {premiumChoice === 'urlaub'
-                        ? `Je ${(parseFloat(premiumAmount) / (teamCount + 1)).toFixed(1)} Urlaubstage pro Person`
-                        : `Je ${(parseFloat(premiumAmount) / (teamCount + 1)).toFixed(2)} € pro Person`}
+                      Je {(parseFloat(premiumAmount.replace(',', '.')) / (teamCount + 1)).toFixed(2)} € pro Person
                     </p>
                   </div>
                 )}
@@ -190,7 +178,7 @@ function Klasse4Card({ suggestion: s }: { suggestion: DbSuggestion }) {
                     size="sm"
                     className="gradient-primary text-primary-foreground hover:opacity-90"
                     onClick={handleSave}
-                    disabled={saving || !premiumChoice}
+                    disabled={saving}
                   >
                     <Save className="mr-1.5 h-3.5 w-3.5" />
                     {saving ? 'Speichern...' : 'Prämie festlegen'}

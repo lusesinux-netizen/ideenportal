@@ -1,0 +1,2 @@
+ALTER TABLE public.suggestions ADD COLUMN IF NOT EXISTS premium_amount numeric(10,2);
+COMMENT ON COLUMN public.suggestions.premium_amount IS 'Individuell durch die Geschaeftsfuehrung festgelegte Geldpraemie (Klasse 4).';

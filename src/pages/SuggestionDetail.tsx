@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import StatusBadge from '@/components/StatusBadge';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSuggestionById } from '@/lib/supabase-helpers';
+import { getPremiumClass } from '@/lib/premiums';
 
 const scopeLabels: Record<string, string> = {
   arbeitsplatz: 'Eigener Arbeitsplatz',
@@ -12,12 +13,6 @@ const scopeLabels: Record<string, string> = {
   kammer: 'Gesamte Kammer',
 };
 
-const premiumLabels: Record<number, { urlaub: string; geld: string }> = {
-  1: { urlaub: '1 Urlaubstag', geld: '100 €' },
-  2: { urlaub: '2 Urlaubstage', geld: '200 €' },
-  3: { urlaub: '3 Urlaubstage', geld: '300 €' },
-  4: { urlaub: 'Individuell', geld: 'Individuell' },
-};
 
 export default function SuggestionDetail() {
   const { id } = useParams();
@@ -38,6 +33,8 @@ export default function SuggestionDetail() {
   }
 
   const teamMembers = s.suggestion_team_members || [];
+  const premium = getPremiumClass(s.premium_class);
+  const premiumAmount = s.premium_amount != null ? Number(s.premium_amount) : null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto space-y-6">
@@ -90,11 +87,17 @@ export default function SuggestionDetail() {
       {s.premium_class && (
         <section className="rounded-xl border border-accent/30 bg-accent/5 p-6">
           <h2 className="font-semibold mb-3 flex items-center gap-2"><Award className="h-4 w-4 text-accent" /> Prämierung – Klasse {s.premium_class}</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="rounded-lg border bg-card p-3 text-center"><p className="text-muted-foreground text-xs">Urlaub</p><p className="font-semibold mt-1">{premiumLabels[s.premium_class]?.urlaub}</p></div>
-            <div className="rounded-lg border bg-card p-3 text-center"><p className="text-muted-foreground text-xs">Geldprämie</p><p className="font-semibold mt-1">{premiumLabels[s.premium_class]?.geld}</p></div>
+          <div className={`grid gap-4 text-sm ${premium?.urlaub ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {premium?.urlaub && (
+              <div className="rounded-lg border bg-card p-3 text-center"><p className="text-muted-foreground text-xs">Urlaub</p><p className="font-semibold mt-1">{premium.urlaub}</p></div>
+            )}
+            <div className="rounded-lg border bg-card p-3 text-center"><p className="text-muted-foreground text-xs">Geldprämie</p><p className="font-semibold mt-1">{premiumAmount != null ? `${premiumAmount.toLocaleString('de-DE')} €` : (premium?.geld ?? 'Individuell')}</p></div>
           </div>
-          {s.premium_choice && <p className="mt-3 text-sm text-muted-foreground">Gewählte Prämie: <span className="font-medium text-foreground">{s.premium_choice === 'urlaub' ? '🏖️ Urlaub' : '💰 Geldprämie'}</span></p>}
+          {premium?.urlaub ? (
+            s.premium_choice && <p className="mt-3 text-sm text-muted-foreground">Gewählte Prämie: <span className="font-medium text-foreground">{s.premium_choice === 'urlaub' ? '🏖️ Urlaub' : '💰 Geldprämie'}</span></p>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground leading-relaxed">{premium?.hinweis}</p>
+          )}
         </section>
       )}
     </motion.div>
