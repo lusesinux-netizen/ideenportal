@@ -6,6 +6,7 @@ import StatCard from '@/components/StatCard';
 import SuggestionCard from '@/components/SuggestionCard';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSuggestions, fetchDashboardStats } from '@/lib/supabase-helpers';
+import { PREMIUM_CLASS_LIST } from '@/lib/premiums';
 
 export default function Dashboard() {
   const { data: suggestions = [] } = useQuery({ queryKey: ['suggestions'], queryFn: fetchSuggestions });
@@ -64,19 +65,15 @@ export default function Dashboard() {
       <section className="rounded-xl border bg-card p-6 shadow-card">
         <h2 className="text-lg font-bold mb-4">Prämienklassen</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { klasse: 1, scope: 'Eigener Arbeitsplatz', urlaub: '1 Tag', geld: '100 €' },
-            { klasse: 2, scope: 'Abteilung', urlaub: '2 Tage', geld: '200 €' },
-            { klasse: 3, scope: 'Gesamte Organisation', urlaub: '3 Tage', geld: '300 €' },
-            { klasse: 4, scope: 'Messbarer wirtschaftl. Nutzen', urlaub: 'Individuell', geld: 'Individuell' },
-          ].map((p) => (
-            <div key={p.klasse} className="rounded-lg border bg-muted/50 p-4 text-center">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Klasse {p.klasse}</div>
+          {PREMIUM_CLASS_LIST.map((p) => (
+            <div key={p.id} className="rounded-lg border bg-muted/50 p-4 text-center">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Klasse {p.id}</div>
               <p className="mt-1 text-sm font-medium">{p.scope}</p>
               <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                <p>🏖️ {p.urlaub} Urlaub</p>
+                {p.urlaub && <p>🏖️ {p.urlaub} Urlaub</p>}
                 <p>💰 {p.geld}</p>
               </div>
+              {!p.urlaub && <p className="mt-2 text-[11px] leading-snug text-muted-foreground">Nur Geldprämie – die Höhe legt die Geschäftsführung fest.</p>}
             </div>
           ))}
         </div>

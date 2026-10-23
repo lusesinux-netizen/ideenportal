@@ -15,6 +15,7 @@ export type DbSuggestion = {
   status: string;
   premium_class: number | null;
   premium_choice: string | null;
+  premium_amount?: number | string | null;
   jury_comment: string | null;
   submitted_by: string;
   created_at: string;

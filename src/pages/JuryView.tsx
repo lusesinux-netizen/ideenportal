@@ -26,7 +26,7 @@ const premiumOptions = [
   { value: '1', label: 'Klasse 1 – Arbeitsplatz' },
   { value: '2', label: 'Klasse 2 – Abteilung' },
   { value: '3', label: 'Klasse 3 – Organisation' },
-  { value: '4', label: 'Klasse 4 – Individuell' },
+  { value: '4', label: 'Klasse 4 – Finanzielle Prämie' },
 ];
 
 function JuryReviewCard({ suggestion: s, isOwnSuggestion }: { suggestion: DbSuggestion; isOwnSuggestion: boolean }) {
@@ -141,6 +141,9 @@ function JuryReviewCard({ suggestion: s, isOwnSuggestion }: { suggestion: DbSugg
                       <div className="space-y-2">
                         <Label>Prämienklasse</Label>
                         <Select value={premiumClass} onValueChange={setPremiumClass}><SelectTrigger><SelectValue placeholder="Klasse wählen" /></SelectTrigger><SelectContent>{premiumOptions.map(p => <SelectItem key={p.value} value={p.value}><Award className="h-3.5 w-3.5 inline mr-1" />{p.label}</SelectItem>)}</SelectContent></Select>
+                        {premiumClass === '4' && (
+                          <p className="text-xs text-muted-foreground">Klasse 4 wird finanziell prämiert – die Höhe der Prämie legt die Geschäftsführung fest.</p>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2"><Label>Kommentar</Label><Textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Bewertung und Begründung..." rows={3} /></div>
