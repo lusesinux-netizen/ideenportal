@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 export default function Auth() {
   const { user, loading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -34,7 +35,16 @@ export default function Auth() {
     setSubmitting(true);
 
     try {
-      if (isLogin) {
+    if (isForgot) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success('E-Mail zum Zurücksetzen gesendet! Bitte prüfen Sie Ihr Postfach.');
+      return;
+    }
+
+    if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success('Erfolgreich angemeldet!');
@@ -74,10 +84,15 @@ export default function Auth() {
 
         <div className="rounded-xl border bg-card p-6 shadow-card">
           <h2 className="text-lg font-semibold mb-4">
-            {isLogin ? 'Anmelden' : 'Konto erstellen'}
+            {isForgot ? 'Passwort vergessen' : isLogin ? 'Anmelden' : 'Konto erstellen'}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isForgot && (
+              <p className="text-sm text-muted-foreground">
+                Geben Sie Ihre E-Mail-Adresse ein und Sie erhalten einen Link zum Zurücksetzen Ihres Passworts.
+              </p>
+            )}
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -96,35 +111,46 @@ export default function Auth() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Passwort</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 pr-10" required minLength={6} />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            {!isForgot && (
+              <div className="space-y-2">
+                <Label htmlFor="password">Passwort</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 pr-10" required minLength={6} />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <Button type="submit" className="w-full gradient-primary text-primary-foreground hover:opacity-90" disabled={submitting}>
-              {submitting ? 'Bitte warten...' : isLogin ? 'Anmelden' : 'Registrieren'}
+              {submitting ? 'Bitte warten...' : isForgot ? 'Link senden' : isLogin ? 'Anmelden' : 'Registrieren'}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => { setIsForgot(v => !v); setIsLogin(true); }}
               className="text-sm text-primary hover:underline"
             >
-              {isLogin ? 'Noch kein Konto? Jetzt registrieren' : 'Bereits registriert? Anmelden'}
+              {isForgot ? 'Zurück zur Anmeldung' : 'Passwort vergessen?'}
             </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => { setIsForgot(false); setIsLogin(!isLogin); }}
+                className="text-sm text-primary hover:underline"
+              >
+                {isLogin ? 'Noch kein Konto? Jetzt registrieren' : 'Bereits registriert? Anmelden'}
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
