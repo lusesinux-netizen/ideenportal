@@ -54,6 +54,13 @@ export const PREMIUM_CLASS_LIST: PremiumClassInfo[] = [1, 2, 3, 4].map(
   id => PREMIUM_CLASSES[id as PremiumClassId]
 );
 
+export function getPremiumClass(
+  premiumClass?: number | null
+): PremiumClassInfo | undefined {
+  if (!premiumClass) return undefined;
+  return PREMIUM_CLASSES[premiumClass as PremiumClassId];
+}
+
 /** Klasse 4 kennt nur die Geldprämie – Urlaubstage sind dort nicht vorgesehen. */
 export function isMoneyOnlyClass(premiumClass?: number | null): boolean {
   return premiumClass === 4;
