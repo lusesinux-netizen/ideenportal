@@ -219,6 +219,7 @@ export type Database = {
           feasibility: string
           id: string
           jury_comment: string | null
+          premium_amount: number | null
           premium_choice: string | null
           premium_class: number | null
           problem_description: string
@@ -239,6 +240,7 @@ export type Database = {
           feasibility: string
           id?: string
           jury_comment?: string | null
+          premium_amount?: number | null
           premium_choice?: string | null
           premium_class?: number | null
           problem_description: string
@@ -259,6 +261,7 @@ export type Database = {
           feasibility?: string
           id?: string
           jury_comment?: string | null
+          premium_amount?: number | null
           premium_choice?: string | null
           premium_class?: number | null
           problem_description?: string
