@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 export default function Auth() {
   const { user, loading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -34,7 +35,16 @@ export default function Auth() {
     setSubmitting(true);
 
     try {
-      if (isLogin) {
+    if (isForgot) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success('E-Mail zum Zurücksetzen gesendet! Bitte prüfen Sie Ihr Postfach.');
+      return;
+    }
+
+    if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success('Erfolgreich angemeldet!');
@@ -74,10 +84,15 @@ export default function Auth() {
 
         <div className="rounded-xl border bg-card p-6 shadow-card">
           <h2 className="text-lg font-semibold mb-4">
-            {isLogin ? 'Anmelden' : 'Konto erstellen'}
+            {isForgot ? 'Passwort vergessen' : isLogin ? 'Anmelden' : 'Konto erstellen'}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isForgot && (
+              <p className="text-sm text-muted-foreground">
+                Geben Sie Ihre E-Mail-Adresse ein und Sie erhalten einen Link zum Zurücksetzen Ihres Passworts.
+              </p>
+            )}
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -113,18 +128,27 @@ export default function Auth() {
             </div>
 
             <Button type="submit" className="w-full gradient-primary text-primary-foreground hover:opacity-90" disabled={submitting}>
-              {submitting ? 'Bitte warten...' : isLogin ? 'Anmelden' : 'Registrieren'}
+              {submitting ? 'Bitte warten...' : isForgot ? 'Link senden' : isLogin ? 'Anmelden' : 'Registrieren'}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => { setIsForgot(v => !v); setIsLogin(true); }}
               className="text-sm text-primary hover:underline"
             >
-              {isLogin ? 'Noch kein Konto? Jetzt registrieren' : 'Bereits registriert? Anmelden'}
+              {isForgot ? 'Zurück zur Anmeldung' : 'Passwort vergessen?'}
             </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => { setIsForgot(false); setIsLogin(!isLogin); }}
+                className="text-sm text-primary hover:underline"
+              >
+                {isLogin ? 'Noch kein Konto? Jetzt registrieren' : 'Bereits registriert? Anmelden'}
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
